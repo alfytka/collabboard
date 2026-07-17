@@ -20,13 +20,19 @@ const router = createRouter({
       path: '/',
       name: 'workspaces',
       component: () => import('@/pages/WorkspacePage.vue'),
-      meta: { requiresGuest: true },
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/workspace-detail/:workspaceId',
+      name: 'workspace-detail',
+      component: () => import('@/pages/WorkspaceDetailPage.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/board/:boardId',
       name: 'board',
       component: () => import('@/pages/BoardPage.vue'),
-      meta: { requiresGuest: true },
+      meta: { requiresAuth: true },
     },
   ],
 });
