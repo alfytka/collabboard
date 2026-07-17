@@ -1,34 +1,22 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
 import type { Board } from '../types';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { useAsyncState } from '@/shared/composables/useAsyncState';
 
 export const useBoardStore = defineStore('board', () => {
-  const boards = ref<Board[]>([]);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  const boards = useAsyncState(async (workspaceId: string) => {
+    const { data, error } = await supabase
+      .from('boards')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false });
 
-  async function fetchBoardsByWorkspace(workspaceId: string) {
-    loading.value = true;
-    error.value = null;
-    try {
-      const { data, error: err } = await supabase
-        .from('boards')
-        .select('*')
-        .eq('workspace_id', workspaceId)
-        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as Board[];
+  });
 
-      if (err) throw err;
-      boards.value = data;
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Gagal memuat board';
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  async function createBoard(workspaceId: string, title: string) {
+  const creating = useAsyncState(async (workspaceId: string, title: string) => {
     const authStore = useAuthStore();
     if (!authStore.user) throw new Error('User tidak ditemukan');
 
@@ -39,14 +27,27 @@ export const useBoardStore = defineStore('board', () => {
       .single();
 
     if (err) throw err;
-    boards.value.unshift(data);
-    return data;
+    return data as Board;
+  });
+
+  async function fetchBoardsByWorkspace(workspaceId: string) {
+    await boards.execute(workspaceId);
+  }
+
+  async function createBoard(workspaceId: string, title: string) {
+    const newBoard = await creating.execute(workspaceId, title);
+    if (boards.data.value) {
+      boards.data.value.unshift(newBoard);
+    }
+    return newBoard;
   }
 
   return {
-    boards,
-    loading,
-    error,
+    boards: boards.data,
+    loading: boards.loading,
+    error: boards.error,
+    creating: creating.loading,
+    createError: creating.error,
     fetchBoardsByWorkspace,
     createBoard,
   };
