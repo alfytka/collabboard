@@ -23,7 +23,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/workspace-detail/:workspaceId',
+      path: '/workspace/:workspaceId',
       name: 'workspace-detail',
       component: () => import('@/pages/WorkspaceDetailPage.vue'),
       meta: { requiresAuth: true },
