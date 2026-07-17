@@ -30,14 +30,19 @@ async function handleCreate() {
       />
       <button
         type="submit"
+        :disabled="workspaceStore.creating"
         class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
       >
-        Buat
+        {{ workspaceStore.creating ? 'Membuat...' : 'Buat' }}
       </button>
     </form>
 
+    <p v-if="workspaceStore.createError" class="text-red-500 text-sm mb-4">
+      {{ workspaceStore.createError }}
+    </p>
+
     <p v-if="workspaceStore.loading">Memuat...</p>
-    <p v-else-if="workspaceStore.error" class="text-red-600">{{ workspaceStore.error }}</p>
+    <p v-else-if="workspaceStore.error" class="text-red-500">{{ workspaceStore.error }}</p>
 
     <ul v-else class="flex flex-col gap-2">
       <li
