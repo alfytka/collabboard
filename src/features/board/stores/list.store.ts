@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { useAsyncState } from '@/shared/composables/useAsyncState';
 import { defineStore } from 'pinia';
 import type { List } from '../types';
+import { computed } from 'vue';
 
 export const useListStore = defineStore('list', () => {
   const lists = useAsyncState(async (boardId: string) => {
@@ -44,13 +45,36 @@ export const useListStore = defineStore('list', () => {
     return newList;
   }
 
+  async function moveList(listId: string, newPosition: number) {
+    const list = lists.data.value?.find((l) => l.id === listId);
+    if (!list) return;
+
+    const oldPosition = list.position;
+    list.position = newPosition;
+
+    const { error } = await supabase
+      .from('lists')
+      .update({ position: newPosition })
+      .eq('id', listId);
+
+    if (error) {
+      list.position = oldPosition;
+      throw error;
+    }
+  }
+
+  const sortedList = computed(() =>
+    [...(lists.data.value ?? []).sort((a, b) => a.position - b.position)]
+  );
+
   return {
-    lists: lists.data,
+    lists: sortedList,
     loading: lists.loading,
     error: lists.error,
     creating: creating.loading,
     createError: creating.error,
     fetchListsByBoard,
     createList,
+    moveList,
   };
 });

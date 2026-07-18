@@ -3,8 +3,10 @@ import CreateListForm from '@/features/board/components/CreateListForm.vue';
 import ListColumn from '@/features/board/components/ListColumn.vue';
 import { useCardStore } from '@/features/board/stores/card.store';
 import { useListStore } from '@/features/board/stores/list.store';
+import { calculatePosition } from '@/shared/utils/position';
 import { computed, onMounted } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import draggable from 'vuedraggable';
 
 const route = useRoute();
 const listStore = useListStore();
@@ -19,6 +21,19 @@ onMounted(async () => {
   await listStore.fetchListsByBoard(boardId.value);
   await cardStore.fetchCardsByBoard(boardId.value);
 });
+
+function handleListMove(event: any) {
+  if (!event.moved) return;
+  const { element, newIndex } = event.moved;
+  const siblings = (listStore.lists).filter((l) => l.id !== element.id);
+  const prevList = siblings[newIndex - 1];
+  const nextList = siblings[newIndex];
+  const newPosition = calculatePosition(
+    prevList?.position ?? null,
+    nextList?.position ?? null,
+  );
+  listStore.moveList(element.id, newPosition);
+}
 </script>
 
 <template>
@@ -30,15 +45,21 @@ onMounted(async () => {
     <div v-if="listStore.loading || cardStore.loading">Memuat board...</div>
     <div v-if="listStore.error" class="text-red-500">{{ listStore.error }}</div>
 
-    <div v-else class="flex gap-4 overflow-x-auto pb-4">
-      <ListColumn
-        v-for="list in listStore.lists"
-        :key="list.id"
-        :list="list"
-        :cards="cardStore.cardsForList(list.id)"
-      />
-
-      <CreateListForm :board-id="boardId" />
-    </div>
+    <draggable
+      v-else
+      :model-value="listStore.lists"
+      item-key="id"
+      class="flex gap-4 overflow-x-auto pb-4"
+      ghost-class="opacity-40"
+      handle=".list-drag-handle"
+      @change="handleListMove"
+    >
+      <template #item="{ element: list }">
+        <ListColumn :list="list" :cards="cardStore.cardsForList(list.id)" />
+      </template>
+      <template #footer>
+        <CreateListForm :board-id="boardId" />
+      </template>
+    </draggable>
   </div>
 </template>

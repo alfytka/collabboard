@@ -54,9 +54,34 @@ export const useCardStore = defineStore('card', () => {
     return newCard;
   }
 
+  async function moveCard(cardId: string, newListId: string, newPosition: number) {
+    // Optimistic udpate: langsung ubah state local dulu, biar UI terasa instan
+    const card = cards.data.value?.find((c) => c.id === cardId);
+    if (!card) return;
+
+    const oldListId = card.list_id;
+    const oldPosition = card.position;
+    card.list_id = newListId;
+    card.position = newPosition;
+
+    const { error } = await supabase
+      .from('cards')
+      .update({ list_id: newListId, position: newPosition })
+      .eq('id', cardId);
+
+    if (error) {
+      // Rollback kalau gagal: inilah pentingnya simpan state lama sebelum optimistic update
+      card.list_id = oldListId;
+      card.position = oldPosition;
+      throw error;
+    }
+  }
+
   // Computed helper: ambil cards untuk 1 list tertentu
   function cardsForList(listId: string) {
-    return (cards.data.value ?? []).filter((c) => c.list_id === listId);
+    return (cards.data.value ?? [])
+      .filter((c) => c.list_id === listId)
+      .sort((a, b) => a.position - b.position);
   }
 
   return {
@@ -67,6 +92,7 @@ export const useCardStore = defineStore('card', () => {
     createError: creating.error,
     fetchCardsByBoard,
     createCard,
+    moveCard,
     cardsForList,
   };
 });
