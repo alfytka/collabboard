@@ -7,6 +7,7 @@ import type {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
 } from '@supabase/supabase-js';
+import { computed, ref } from 'vue';
 
 export const useCardStore = defineStore('card', () => {
   // Cards disimpan flat, di grouping by list_id saat render (bukan disimpan per list di store)
@@ -102,9 +103,22 @@ export const useCardStore = defineStore('card', () => {
     }
   }
 
+  const searchQuery = ref('');
+
+  const filteredCards = computed(() => {
+    if (!searchQuery.value.trim()) {
+      return cards.data.value ?? [];
+    }
+    const query = searchQuery.value.toLowerCase();
+    return (cards.data.value ?? []).filter((c) =>
+      c.title.toLowerCase().includes(query) ||
+      c.description?.toLowerCase().includes(query)
+    );
+  })
+
   // Computed helper: ambil cards untuk 1 list tertentu
   function cardsForList(listId: string) {
-    return (cards.data.value ?? [])
+    return filteredCards.value
       .filter((c) => c.list_id === listId)
       .sort((a, b) => a.position - b.position);
   }
@@ -159,6 +173,7 @@ export const useCardStore = defineStore('card', () => {
     error: cards.error,
     creating: creating.loading,
     createError: creating.error,
+    searchQuery,
     fetchCardsByBoard,
     createCard,
     moveCard,
