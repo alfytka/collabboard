@@ -3,6 +3,10 @@ import { useAsyncState } from '@/shared/composables/useAsyncState';
 import { defineStore } from 'pinia';
 import type { List } from '../types';
 import { computed } from 'vue';
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 
 export const useListStore = defineStore('list', () => {
   const lists = useAsyncState(async (boardId: string) => {
@@ -67,6 +71,46 @@ export const useListStore = defineStore('list', () => {
     [...(lists.data.value ?? []).sort((a, b) => a.position - b.position)]
   );
 
+  let channel: RealtimeChannel | null = null;
+
+  function subscribeToBoard(boardId: string) {
+    channel = supabase
+      .channel(`lists:board:${boardId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lists', filter: `board_id=eq.${boardId}` },
+        (payload: RealtimePostgresChangesPayload<List>) => {
+          handleRealtimeEvent(payload);
+        }
+      )
+      .subscribe();
+  }
+
+  function unsubscribe() {
+    if (channel) {
+      supabase.removeChannel(channel);
+      channel = null;
+    }
+  }
+
+  function handleRealtimeEvent(payload: RealtimePostgresChangesPayload<List>) {
+    if (!lists.data.value) return;
+
+    if (payload.eventType === 'INSERT') {
+      const exists = lists.data.value.some((l) => l.id === payload.new.id);
+      if (!exists) lists.data.value.push(payload.new);
+    }
+
+    if (payload.eventType === 'UPDATE') {
+      const index = lists.data.value.findIndex((l) => l.id === payload.new.id);
+      if (index !== -1) lists.data.value[index] = payload.new;
+    }
+
+    if (payload.eventType === 'DELETE') {
+      lists.data.value = lists.data.value.filter((l) => l.id !== payload.old.id);
+    }
+  }
+
   return {
     lists: sortedList,
     loading: lists.loading,
@@ -76,5 +120,7 @@ export const useListStore = defineStore('list', () => {
     fetchListsByBoard,
     createList,
     moveList,
+    subscribeToBoard,
+    unsubscribe,
   };
 });
