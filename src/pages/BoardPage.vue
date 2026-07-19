@@ -8,7 +8,7 @@ import { usePresenceStore } from '@/features/board/stores/presence.store';
 import type { Card } from '@/features/board/types';
 import CardDetailModal from '@/shared/components/CardDetailModal.vue';
 import { calculatePosition } from '@/shared/utils/position';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import draggable from 'vuedraggable';
 
@@ -24,24 +24,35 @@ const boardId = computed(() => {
   return Array.isArray(id) ? id[0] : id;
 });
 
-onMounted(async () => {
-  await listStore.fetchListsByBoard(boardId.value);
-  await cardStore.fetchCardsByBoard(boardId.value);
+async function loadBoard(newId: string, oldId?: string) {
+  // Cleanup subscription lama, kalau ada (bukan initial load)
+  if (oldId) {
+    listStore.unsubscribe();
+    cardStore.unsubscribe();
+    await presenceStore.unsubscribe();
+  }
+
+  await listStore.fetchListsByBoard(newId);
+  await cardStore.fetchCardsByBoard(newId);
 
   // Subscribe setelah initial fetch selesai, supaya tidak race
   // dengan data awal yang sedang di-load.
-  listStore.subscribeToBoard(boardId.value);
-  cardStore.subscribeToBoard(boardId.value);
-  presenceStore.subscribeToBoard(boardId.value);
-});
+  listStore.subscribeToBoard(newId);
+  cardStore.subscribeToBoard(newId);
+  presenceStore.subscribeToBoard(newId);
+}
 
-onUnmounted(() => {
+// immediate: true membuat ini jalan otomatis saat komponen pertama kali setup,
+// jadi tidak perlu onMounted terpisah lagi untuk fetch + subscribe awal
+watch(boardId, loadBoard, { immediate: true });
+
+onUnmounted(async () => {
   // Wajib unsubscribe saat keluar dari board, kalau tidak,
   // channel tetap aktif di background dan bikin memory leak
   // + terus nerima event untuk board yang sudah tidak dilihat user
   listStore.unsubscribe();
   cardStore.unsubscribe();
-  presenceStore.unsubscribe();
+  await presenceStore.unsubscribe(); // await, supaya benar-benar selesai sebelum lanjut
 });
 
 function handleListMove(event: any) {

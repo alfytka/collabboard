@@ -42,9 +42,10 @@ export const usePresenceStore = defineStore('presence', () => {
       });
   }
 
-  function unsubscribe() {
+  async function unsubscribe() {
     if (channel) {
-      supabase.removeChannel(channel);
+      await channel.untrack(); // kirim 'saya keluar' dulu, tunggu selesai
+      await supabase.removeChannel(channel); // baru tutup koneksi
       channel = null;
       onlineUsers.value = [];
     }
