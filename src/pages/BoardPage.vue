@@ -5,8 +5,10 @@ import PresenceAvatars from '@/features/board/components/PresenceAvatars.vue';
 import { useCardStore } from '@/features/board/stores/card.store';
 import { useListStore } from '@/features/board/stores/list.store';
 import { usePresenceStore } from '@/features/board/stores/presence.store';
+import type { Card } from '@/features/board/types';
+import CardDetailModal from '@/shared/components/CardDetailModal.vue';
 import { calculatePosition } from '@/shared/utils/position';
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import draggable from 'vuedraggable';
 
@@ -14,6 +16,8 @@ const route = useRoute();
 const listStore = useListStore();
 const cardStore = useCardStore();
 const presenceStore = usePresenceStore();
+
+const selectedCard = ref<Card | null>(null);
 
 const boardId = computed(() => {
   const id = route.params.boardId;
@@ -52,6 +56,14 @@ function handleListMove(event: any) {
   );
   listStore.moveList(element.id, newPosition);
 }
+
+function openCard(card: Card) {
+  selectedCard.value = card;
+}
+
+function closeCard() {
+  selectedCard.value = null;
+}
 </script>
 
 <template>
@@ -76,11 +88,17 @@ function handleListMove(event: any) {
       @change="handleListMove"
     >
       <template #item="{ element: list }">
-        <ListColumn :list="list" :cards="cardStore.cardsForList(list.id)" />
+        <ListColumn
+          :list="list"
+          :cards="cardStore.cardsForList(list.id)"
+          @card-click="openCard"
+        />
       </template>
       <template #footer>
         <CreateListForm :board-id="boardId" />
       </template>
     </draggable>
+
+    <CardDetailModal :card="selectedCard" @close="closeCard" />
   </div>
 </template>

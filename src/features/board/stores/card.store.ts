@@ -81,6 +81,27 @@ export const useCardStore = defineStore('card', () => {
     }
   }
 
+  async function updateCard(
+    cardId: string,
+    updates: Partial<Pick<Card, 'title' | 'description' | 'assignee_id' | 'due_date'>>
+  ) {
+    const card = cards.data.value?.find((c) => c.id === cardId);
+    if (!card) return;
+
+    const oldValues = { ...card };
+    Object.assign(card, updates); // optimistic update
+
+    const { error } = await supabase
+      .from('cards')
+      .update(updates)
+      .eq('id', cardId);
+
+    if (error) {
+      Object.assign(card, oldValues); // rollback
+      throw error;
+    }
+  }
+
   // Computed helper: ambil cards untuk 1 list tertentu
   function cardsForList(listId: string) {
     return (cards.data.value ?? [])
@@ -141,6 +162,7 @@ export const useCardStore = defineStore('card', () => {
     fetchCardsByBoard,
     createCard,
     moveCard,
+    updateCard,
     cardsForList,
     subscribeToBoard,
     unsubscribe,

@@ -11,6 +11,8 @@ const props = defineProps<{
   cards: Card[];
 }>();
 
+const emit = defineEmits<{ cardClick: [card: Card] }>();
+
 const cardStore = useCardStore();
 
 // vuedraggable butuh v-model, tapi kita tidak mau langsung mutate props.
@@ -58,7 +60,7 @@ function handleCardMove(event: any) {
       @change="handleCardMove"
     >
       <template #item="{ element }">
-        <CardItem :card="element" />
+        <CardItem :card="element" @click="emit('cardClick', element)" />
       </template>
     </draggable>
 
