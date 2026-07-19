@@ -55,6 +55,7 @@ function handleCardMove(event: any) {
       :model-value="cards"
       item-key="id"
       group="cards"
+      :disabled="!!cardStore.searchQuery"
       class="flex flex-col gap-2 mb-3 min-h-5"
       ghost-class="opacity-40"
       @change="handleCardMove"

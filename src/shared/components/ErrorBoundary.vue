@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onErrorCaptured, ref } from 'vue';
 
+defineOptions({ inheritAttrs: false });
+
 const hasError = ref(false);
 const errorMessage = ref('');
 
@@ -25,17 +27,19 @@ onErrorCaptured((err, instance, info) => {
 </script>
 
 <template>
-  <div v-if="hasError" class="max-w-md mx-auto mt-10 p-6 bg-red-50 rounded-xl text-center">
-    <p class="text-red-600 font-medium mb-2">⚠️ Terjadi kesalahan</p>
-    <p class="text-sm text-red-500 mb-4">{{ errorMessage }}</p>
-    <button
-      @click="reset"
-      class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition"
-    >
-      Coba Lagi
-    </button>
+  <div v-bind="$attrs" class="contents">
+    <div v-if="hasError" class="max-w-md mx-auto mt-10 p-6 bg-red-50 rounded-xl text-center">
+      <p class="text-red-600 font-medium mb-2">⚠️ Terjadi kesalahan</p>
+      <p class="text-sm text-red-500 mb-4">{{ errorMessage }}</p>
+      <button
+        @click="reset"
+        class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition"
+      >
+        Coba Lagi
+      </button>
+    </div>
+  
+    <!-- Kalau tidak ada error, render children seperti biasa lewat default slot -->
+    <slot v-else />
   </div>
-
-  <!-- Kalau tidak ada error, render children seperti biasa lewat default slot -->
-  <slot v-else />
 </template>
