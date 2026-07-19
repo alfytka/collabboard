@@ -4,7 +4,7 @@ import ListColumn from '@/features/board/components/ListColumn.vue';
 import { useCardStore } from '@/features/board/stores/card.store';
 import { useListStore } from '@/features/board/stores/list.store';
 import { calculatePosition } from '@/shared/utils/position';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import draggable from 'vuedraggable';
 
@@ -20,6 +20,19 @@ const boardId = computed(() => {
 onMounted(async () => {
   await listStore.fetchListsByBoard(boardId.value);
   await cardStore.fetchCardsByBoard(boardId.value);
+
+  // Subscribe setelah initial fetch selesai, supaya tidak race
+  // dengan data awal yang sedang di-load.
+  listStore.subscribeToBoard(boardId.value);
+  cardStore.subscribeToBoard(boardId.value);
+});
+
+onUnmounted(() => {
+  // Wajib unsubscribe saat keluar dari board, kalau tidak,
+  // channel tetap aktif di background dan bikin memory leak
+  // + terus nerima event untuk board yang sudah tidak dilihat user
+  listStore.unsubscribe();
+  cardStore.unsubscribe();
 });
 
 function handleListMove(event: any) {

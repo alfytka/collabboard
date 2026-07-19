@@ -3,6 +3,10 @@ import { useAsyncState } from '@/shared/composables/useAsyncState';
 import { defineStore } from 'pinia';
 import type { Card } from '../types';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 
 export const useCardStore = defineStore('card', () => {
   // Cards disimpan flat, di grouping by list_id saat render (bukan disimpan per list di store)
@@ -84,6 +88,50 @@ export const useCardStore = defineStore('card', () => {
       .sort((a, b) => a.position - b.position);
   }
 
+  let channel: RealtimeChannel | null = null;
+
+  function subscribeToBoard(boardId: string) {
+    channel = supabase
+      .channel(`cards:board:${boardId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cards' },
+        (payload: RealtimePostgresChangesPayload<Card>) => {
+          handleRealtimeEvent(payload);
+        }
+      )
+      .subscribe();
+  }
+
+  function unsubscribe() {
+    if (channel) {
+      supabase.removeChannel(channel);
+      channel = null;
+    }
+  }
+
+  function handleRealtimeEvent(payload: RealtimePostgresChangesPayload<Card>) {
+    if (!cards.data.value) return;
+
+    if (payload.eventType === 'INSERT') {
+      const exists = cards.data.value.some((c) => c.id === payload.new.id);
+      if (!exists) {
+        cards.data.value.push(payload.new);
+      }
+    }
+
+    if (payload.eventType === 'UPDATE') {
+      const index = cards.data.value.findIndex((c) => c.id === payload.new.id);
+      if (index !== -1) {
+        cards.data.value[index] = payload.new;
+      }
+    }
+
+    if (payload.eventType === 'DELETE') {
+      cards.data.value = cards.data.value.filter((c) => c.id !== payload.old.id);
+    }
+  }
+
   return {
     cards: cards.data,
     loading: cards.loading,
@@ -94,5 +142,7 @@ export const useCardStore = defineStore('card', () => {
     createCard,
     moveCard,
     cardsForList,
+    subscribeToBoard,
+    unsubscribe,
   };
 });
