@@ -6,13 +6,13 @@ test.describe('Board - alur inti', () => {
     // atau lewat test signup di atas - untuk sekarang asumsikan sudah ada)
     await page.goto('/login');
     await page.getByLabel('Email').fill(process.env.E2E_TEST_EMAIL!);
-    await page.getByLabel('Password').fill(process.env.E2E_TEST_EMAIL!);
+    await page.getByLabel('Password').fill(process.env.E2E_TEST_PASSWORD!);
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page).toHaveURL('/');
   });
 
   test('user bisa membuat workspace, board, list, and card', async ({ page }) => {
-    const workspaceName = `Test Workspace ${Date.now()}`;
+    const workspaceName = `[E2E] Test Workspace ${Date.now()}`;
 
     await page.getByPlaceholder('Nama workspace baru...').fill(workspaceName);
     await page.getByRole('button', { name: 'Buat' }).click();
@@ -28,14 +28,14 @@ test.describe('Board - alur inti', () => {
     await page.getByText('Test Board').click();
     await expect(page).toHaveURL(/\/board\//);
 
-    await page.getByText('+ Tambah list').click();
+    await page.getByText('Tambah list').click();
     await page.getByPlaceholder('Nama list...').fill('To Do');
-    await page.getByRole('button', { name: 'Tambah' }).click();
+    await page.getByRole('button', { name: 'Tambah', exact: true }).click();
     await expect(page.getByText('To Do')).toBeVisible();
 
-    await page.getByText('+ Tambah card').click();
+    await page.getByText('Tambah card').click();
     await page.getByPlaceholder('Nama card...').fill('Belajar Playwright');
-    await page.getByRole('button', { name: 'Tambah' }).click();
+    await page.getByRole('button', { name: 'Tambah', exact: true }).click();
     await expect(page.getByText('Belajar Playwright')).toBeVisible();
   });
 
@@ -53,17 +53,36 @@ test.describe('Board - alur inti', () => {
       await page.getByLabel('Email').fill(process.env.E2E_TEST_EMAIL!);
       await page.getByLabel('Password').fill(process.env.E2E_TEST_PASSWORD!);
       await page.getByRole('button', { name: 'Login' }).click();
+      await expect(page).toHaveURL('/');
     }
 
+    // User A membuat workspace + board baru KHUSUS untuk test ini
+    const workspaceName = `[E2E] Realtime Test ${Date.now()}`
+    await pageA.getByPlaceholder('Nama workspace baru...').fill(workspaceName)
+    await pageA.getByRole('button', { name: 'Buat' }).click()
+    await expect(pageA.getByText(workspaceName)).toBeVisible()
+    await pageA.getByText(workspaceName).click()
+
+    await pageA.getByPlaceholder('Nama board baru...').fill('Realtime Board')
+    await pageA.getByRole('button', { name: 'Buat Board' }).click()
+    await pageA.getByText('Realtime Board').click()
+    await expect(pageA).toHaveURL(/\/board\//)
+
+    await pageA.getByText('Tambah list').click();
+    await pageA.getByPlaceholder('Nama list...').fill('To Do');
+    await pageA.getByRole('button', { name: 'Tambah', exact: true }).click();
+    await expect(pageA.getByText('To Do')).toBeVisible();
+
     // Kedua user buka board yang sama
-    const boardUrl = '/board/BOARD_ID_YANG_SUDAH_DISIAPKAN';
-    await pageA.goto(boardUrl);
+    // Ambil boardId dari URL yang sebenarnya, no harcode
+    const boardUrl = pageA.url();
+
     await pageB.goto(boardUrl);
 
     // User A menambah card baru
-    await pageA.getByText('+ Tambah card').first().click();
+    await pageA.getByText('Tambah card').first().click();
     await pageA.getByPlaceholder('Nama card...').fill('Card dari User A');
-    await pageA.getByRole('button', { name: 'Tambah' }).click();
+    await pageA.getByRole('button', { name: 'Tambah', exact: true }).click();
 
     // User B (TANPA refresh) harus melihat card itu muncul via real-time subscription
     await expect(pageB.getByText('Card dari User A')).toBeVisible({ timeout: 5000 });

@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+
+dotenv.config(); // load .env secara eksplisit untuk proses Node/Playwright
 
 /**
  * Read environment variables from file.
@@ -74,7 +77,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev -- --mode test', // pakai .env.test
+    // command: 'npm run dev -- --mode test', // pakai .env.test
+    command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
   },
