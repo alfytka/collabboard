@@ -30,6 +30,41 @@ export const useBoardStore = defineStore('board', () => {
     return data as Board;
   });
 
+  const updating = useAsyncState(async (boardId: string, title: string) => {
+    const board = boards.data.value?.find((b) => b.id === boardId);
+    if (!board) return;
+
+    const oldTitle = board.title;
+    board.title = title; // optimistic
+
+    const { error } = await supabase
+      .from('boards')
+      .update({ title })
+      .eq('id', boardId);
+
+    if (error) {
+      board.title = oldTitle; // rollback
+      throw error;
+    }
+  });
+
+  const deleting = useAsyncState(async (boardId: string) => {
+    if (!boards.data.value) return;
+
+    const backup = [...boards.data.value];
+    boards.data.value = boards.data.value.filter((b) => b.id !== boardId); // optimistic
+
+    const { error } = await supabase
+      .from('boards')
+      .delete()
+      .eq('id', boardId);
+
+    if (error) {
+      boards.data.value = backup; // rollback
+      throw error;
+    }
+  });
+
   async function fetchBoardsByWorkspace(workspaceId: string) {
     await boards.execute(workspaceId);
   }
@@ -42,13 +77,27 @@ export const useBoardStore = defineStore('board', () => {
     return newBoard;
   }
 
+  async function updateBoard(boardId: string, title: string) {
+    await updating.execute(boardId, title);
+  }
+
+  async function deleteBoard(boardId: string) {
+    await deleting.execute(boardId);
+  }
+
   return {
     boards: boards.data,
     loading: boards.loading,
     error: boards.error,
     creating: creating.loading,
     createError: creating.error,
+    updating: updating.loading,
+    updateError: updating.error,
+    deleting: deleting.loading,
+    deleteError: deleting.error,
     fetchBoardsByWorkspace,
     createBoard,
+    updateBoard,
+    deleteBoard,
   };
 });

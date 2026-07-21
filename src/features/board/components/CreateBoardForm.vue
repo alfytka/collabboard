@@ -8,9 +8,13 @@ const props = defineProps<{
 
 const boardStore = useBoardStore();
 const title = ref('');
+const titleRef = ref<HTMLInputElement | null>(null);
 
 async function handleSubmit() {
-  if (!title.value.trim()) return;
+  if (!title.value.trim()) {
+    titleRef.value?.focus();
+    return;
+  }
   await boardStore.createBoard(props.workspaceId, title.value);
   title.value = '';
 }
@@ -19,6 +23,7 @@ async function handleSubmit() {
 <template>
   <form class="flex gap-2" @submit.prevent="handleSubmit">
     <input
+      ref="titleRef"
       v-model="title"
       type="text"
       placeholder="Nama board baru..."

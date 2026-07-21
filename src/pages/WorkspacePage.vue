@@ -129,7 +129,7 @@ async function confirmDelete() {
         <!-- Edit mode -->
         <div
           v-if="editingId === workspace.id"
-          class="border border-gray-300 rounded-md p-4 flex gap-2"
+          class="border border-gray-300 rounded-md p-4 flex items-center gap-2"
         >
           <input
             :ref="(el) => setEditInputRef(el, workspace.id)"
@@ -139,20 +139,22 @@ async function confirmDelete() {
             @keyup.enter="saveEdit"
             @keyup.escape="editingId = null"
           />
-          <button
-            class="text-sm text-blue-600 hover:bg-blue-100 px-2 rounded-md"
-            @click="saveEdit"
-            :disabled="workspaceStore.updating"
-          >
-            {{ workspaceStore.updating ? 'Menyimpan...' : 'Simpan' }}
-          </button>
-          <button
-            class="text-sm text-gray-500 hover:text-gray-600 hover:bg-gray-200 px-2 rounded-md"
-            @click="editingId = null"
-            :disabled="workspaceStore.updating"
-          >
-            Batal
-          </button>
+          <div class="flex gap-1">
+            <button
+              class="text-sm text-blue-600 hover:bg-blue-100 px-2 py-1.5 rounded-md"
+              @click="saveEdit"
+              :disabled="workspaceStore.updating"
+            >
+              {{ workspaceStore.updating ? 'Menyimpan...' : 'Simpan' }}
+            </button>
+            <button
+              class="text-sm text-gray-500 hover:text-gray-600 hover:bg-gray-200 px-2 py-1.5 rounded-md"
+              @click="editingId = null"
+              :disabled="workspaceStore.updating"
+            >
+              Batal
+            </button>
+          </div>
         </div>
 
         <!-- Normal mode -->
