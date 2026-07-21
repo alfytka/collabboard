@@ -29,6 +29,41 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     return data as Workspace;
   });
 
+  const updating = useAsyncState(async (workspaceId: string, name: string) => {
+    const workspace = workspaces.data.value?.find((w) => w.id === workspaceId);
+    if (!workspace) return;
+
+    const oldName = workspace.name;
+    workspace.name = name; // optimistic update
+
+    const { error } = await supabase
+      .from('workspaces')
+      .update({ name })
+      .eq('id', workspaceId);
+
+    if (error) {
+      workspace.name = oldName; // rollback
+      throw error;
+    }
+  });
+
+  const deleting = useAsyncState(async (workspaceId: string) => {
+    if (!workspaces.data.value) return;
+
+    const backup = [...workspaces.data.value];
+    workspaces.data.value = workspaces.data.value.filter((w) => w.id !== workspaceId);
+
+    const { error } = await supabase
+      .from('workspaces')
+      .delete()
+      .eq('id', workspaceId);
+
+    if (error) {
+      workspaces.data.value = backup; // rollback
+      throw error;
+    }
+  });
+
   async function fetchWorkspaces() {
     await workspaces.execute();
   };
@@ -42,13 +77,27 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     return newWorkspace;
   }
 
+  async function updateWorkspace(workspaceId: string, name: string) {
+    await updating.execute(workspaceId, name);
+  }
+
+  async function deleteWorkspace(workspaceId: string) {
+    await deleting.execute(workspaceId);
+  }
+
   return {
     workspaces: workspaces.data,
     loading: workspaces.loading,
     error: workspaces.error,
     creating: creating.loading,
     createError: creating.error,
+    updating: updating.loading,
+    updateError: updating.error,
+    deleting: deleting.loading,
+    deleteError: deleting.error,
     fetchWorkspaces,
     createWorkspace,
+    updateWorkspace,
+    deleteWorkspace,
   };
 });
