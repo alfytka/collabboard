@@ -16,6 +16,17 @@ export const useBoardStore = defineStore('board', () => {
     return data as Board[];
   });
 
+  const currentBoard = useAsyncState(async (boardId: string) => {
+    const { data, error } = await supabase
+      .from('boards')
+      .select('*')
+      .eq('id', boardId)
+      .single();
+
+    if (error) throw error;
+    return data as Board;
+  });
+
   const creating = useAsyncState(async (workspaceId: string, title: string) => {
     const authStore = useAuthStore();
     if (!authStore.user) throw new Error('User tidak ditemukan');
@@ -69,6 +80,10 @@ export const useBoardStore = defineStore('board', () => {
     await boards.execute(workspaceId);
   }
 
+  async function fetchBoardById(boardId: string) {
+    await currentBoard.execute(boardId);
+  }
+
   async function createBoard(workspaceId: string, title: string) {
     const newBoard = await creating.execute(workspaceId, title);
     if (boards.data.value) {
@@ -87,6 +102,7 @@ export const useBoardStore = defineStore('board', () => {
 
   return {
     boards: boards.data,
+    currentBoard: currentBoard.data,
     loading: boards.loading,
     error: boards.error,
     creating: creating.loading,
@@ -96,6 +112,7 @@ export const useBoardStore = defineStore('board', () => {
     deleting: deleting.loading,
     deleteError: deleting.error,
     fetchBoardsByWorkspace,
+    fetchBoardById,
     createBoard,
     updateBoard,
     deleteBoard,

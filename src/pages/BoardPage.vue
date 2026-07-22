@@ -3,6 +3,7 @@ import CreateListForm from '@/features/board/components/CreateListForm.vue';
 import ListColumn from '@/features/board/components/ListColumn.vue';
 import PresenceAvatars from '@/features/board/components/PresenceAvatars.vue';
 import SearchBar from '@/features/board/components/SearchBar.vue';
+import { useBoardStore } from '@/features/board/stores/board.store';
 import { useCardStore } from '@/features/board/stores/card.store';
 import { useListStore } from '@/features/board/stores/list.store';
 import { usePresenceStore } from '@/features/board/stores/presence.store';
@@ -15,6 +16,7 @@ import { RouterLink, useRoute } from 'vue-router';
 import draggable from 'vuedraggable';
 
 const route = useRoute();
+const boardStore = useBoardStore();
 const listStore = useListStore();
 const cardStore = useCardStore();
 const presenceStore = usePresenceStore();
@@ -35,6 +37,7 @@ async function loadBoard(newId: string, oldId?: string) {
     await presenceStore.unsubscribe();
   }
 
+  await boardStore.fetchBoardById(newId);
   await listStore.fetchListsByBoard(newId);
   await cardStore.fetchCardsByBoard(newId);
 
@@ -100,40 +103,57 @@ function closeModalOrClearSearch() {
       { key: 'Escape', handler: closeModalOrClearSearch },
     ]"
   >
-    <div class="flex items-center justify-between mb-4">
-      <RouterLink to="/" class="text-sm text-blue-500 hover:underline mb-4 inline-block">
-        Semua Workspace
-      </RouterLink>
-      <PresenceAvatars :users="presenceStore.onlineUsers" />
+    <div class="max-w-4xl mx-auto mb-6">
+      <div class="flex items-center justify-between">
+        <RouterLink
+          v-if="boardStore.currentBoard"
+          :to="{
+            name: 'workspace-detail',
+            params: { workspaceId: boardStore.currentBoard.workspace_id }
+          }"
+          class="text-sm text-blue-500 hover:underline inline-block"
+        >
+          Kembali ke Workspace
+        </RouterLink>
+        <PresenceAvatars :users="presenceStore.onlineUsers" />
+      </div>
+
+      <h1 class="text-2xl font-bold mt-2 mb-4">
+        {{ boardStore.currentBoard?.title ?? 'Board' }}
+      </h1>
+
+      <SearchBar ref="searchBarRef" />
     </div>
 
-    <SearchBar ref="searchBarRef" />
-
-    <SkeletonBoard v-if="listStore.loading || cardStore.loading" />
-    <div v-if="listStore.error" class="text-red-500">{{ listStore.error }}</div>
-
-    <draggable
-      v-else
-      :model-value="listStore.lists"
-      item-key="id"
-      :disabled="!!cardStore.searchQuery"
-      class="flex gap-4 overflow-x-auto pb-4"
-      ghost-class="opacity-40"
-      handle=".list-drag-handle"
-      @change="handleListMove"
-    >
-      <template #item="{ element: list }">
-        <ListColumn
-          :list="list"
-          :cards="cardStore.cardsForList(list.id)"
-          @card-click="openCard"
-        />
-      </template>
-      <template #footer>
-        <CreateListForm :board-id="boardId" />
-      </template>
-    </draggable>
-
-    <CardDetailModal :card="selectedCard" @close="closeCard" />
+    <div class="max-w-4xl mx-auto">
+      <SkeletonBoard v-if="listStore.loading || cardStore.loading" />
+      <div v-else-if="listStore.error" class="text-red-500">
+        {{ listStore.error }}
+      </div>
+  
+      <draggable
+        v-else
+        :model-value="listStore.lists"
+        item-key="id"
+        :disabled="!!cardStore.searchQuery"
+        class="flex gap-4 overflow-x-auto pb-4"
+        ghost-class="opacity-40"
+        handle=".list-drag-handle"
+        @change="handleListMove"
+      >
+        <template #item="{ element: list }">
+          <ListColumn
+            :list="list"
+            :cards="cardStore.cardsForList(list.id)"
+            @card-click="openCard"
+          />
+        </template>
+        <template #footer>
+          <CreateListForm :board-id="boardId" />
+        </template>
+      </draggable>
+    </div>
   </div>
+
+  <CardDetailModal :card="selectedCard" @close="closeCard" />
 </template>

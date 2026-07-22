@@ -19,6 +19,8 @@ const description = ref('');
 const dueDate = ref('');
 const newComment = ref('');
 
+const newCommentRef = ref<HTMLInputElement | null>(null);
+
 // Sync form state setiap kali card yang dibuka berganti
 watch(
   () => props.card,
@@ -51,7 +53,11 @@ async function handleSaveDueDate() {
 }
 
 async function handleAddComment() {
-  if (!props.card || !newComment.value.trim()) return;
+  if (!newComment.value.trim()) {
+    newCommentRef.value?.focus();
+    return;
+  }
+  if (!props.card) return;
   await commentStore.addComment(props.card.id, newComment.value);
   newComment.value = '';
 }
@@ -68,7 +74,7 @@ async function handleAddComment() {
       />
 
       <div>
-        <label class="text-xs font-medium text-gray-500 uppercase">
+        <label class="text-sm font-medium text-gray-500">
           Deskripsi
         </label>
         <textarea
@@ -81,7 +87,7 @@ async function handleAddComment() {
       </div>
 
       <div>
-        <label class="text-xs font-medium text-gray-500 uppercase">
+        <label class="text-sm font-medium text-gray-500">
           Tanggal Jatuh Tempo
         </label>
         <input
@@ -93,10 +99,10 @@ async function handleAddComment() {
       </div>
 
       <div>
-        <label class="text-xs font-medium text-gray-500 uppercase">
+        <label class="text-sm font-medium text-gray-500">
           Komentar
         </label>
-        <div class="flex flex-col gap-2 mt-2 max-h-40 overflow-y-auto">
+        <div class="flex flex-col gap-2 mt-1 max-h-40 overflow-y-auto">
           <div
             v-for="comment in commentStore.comments"
             :key="comment.id"
@@ -106,8 +112,9 @@ async function handleAddComment() {
           </div>
         </div>
 
-        <form class="flex gap-2 mt-2" @submit.prevent="handleAddComment">
+        <form class="flex gap-2 mt-1" @submit.prevent="handleAddComment">
           <input
+            ref="newCommentRef"
             v-model="newComment"
             type="text"
             placeholder="Tulis komentar..."
