@@ -7,7 +7,7 @@ const emit = defineEmits<{ click: [] }>();
 
 <template>
   <div
-    class="bg-white rounded-md p-3 shadow-sm border border-gray-200 hover:shadow-md transition cursor-pointer"
+    class="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition cursor-pointer"
     @click="emit('click')"
   >
     <p class="text-sm text-gray-800">{{ card.title }}</p>
