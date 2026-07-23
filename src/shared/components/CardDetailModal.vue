@@ -68,17 +68,19 @@ async function handleAddComment() {
     <div v-if="card" class="p-6 flex flex-col gap-4">
       <input
         v-model="title"
+        id="title"
         type="text"
         class="text-lg font-semibold border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none pb-1"
         @blur="handleSaveTitle"
       />
 
       <div>
-        <label class="text-sm font-medium text-gray-500">
+        <label for="deskripsi" class="text-sm font-medium text-gray-500">
           Deskripsi
         </label>
         <textarea
           v-model="description"
+          id="deskripsi"
           rows="3"
           placeholder="Tambahkan deskripsi..."
           class="w-full mt-1 border border-gray-200 rounded-md p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"  
@@ -87,11 +89,12 @@ async function handleAddComment() {
       </div>
 
       <div>
-        <label class="text-sm font-medium text-gray-500">
+        <label for="date" class="text-sm font-medium text-gray-500">
           Tanggal Jatuh Tempo
         </label>
         <input
           v-model="dueDate"
+          id="date"
           type="date"
           class="block mt-1 border border-gray-200 rounded-md p-2 text-sm"
           @change="handleSaveDueDate"
@@ -99,7 +102,7 @@ async function handleAddComment() {
       </div>
 
       <div>
-        <label class="text-sm font-medium text-gray-500">
+        <label for="newComment" class="text-sm font-medium text-gray-500">
           Komentar
         </label>
         <div class="flex flex-col gap-2 mt-1 max-h-40 overflow-y-auto">
@@ -116,6 +119,7 @@ async function handleAddComment() {
           <input
             ref="newCommentRef"
             v-model="newComment"
+            id="newComment"
             type="text"
             placeholder="Tulis komentar..."
             class="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm"
