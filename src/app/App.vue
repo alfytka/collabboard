@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/features/auth/stores/auth.store';
+import AppNav from '@/shared/components/AppNav.vue';
 import ErrorBoundary from '@/shared/components/ErrorBoundary.vue';
+
+const authStore = useAuthStore();
 </script>
 
 <template>
   <main class="min-h-dvh bg-gray-50 transition-colors">
+    <AppNav v-if="authStore.isAuthenticated" />
+
     <ErrorBoundary>
       <RouterView v-slot="{ Component }">
         <Suspense v-if="Component">
