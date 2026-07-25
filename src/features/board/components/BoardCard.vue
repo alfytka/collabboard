@@ -7,6 +7,8 @@ defineProps<{
   board: Board;
   isEditing: boolean;
   isMenuOpen: boolean;
+  listCount: number;
+  cardCount: number;
 }>();
 
 const emit = defineEmits<{
@@ -19,7 +21,7 @@ const emit = defineEmits<{
 
 <template>
   <!-- Edit mode -->
-  <div v-if="isEditing" class="border border-blue-300 rounded-lg px-4 pt-4 pb-1">
+  <div v-if="isEditing" class="border border-blue-300 rounded-lg p-4">
     <slot name="edit-form" />
   </div>
 
@@ -43,6 +45,15 @@ const emit = defineEmits<{
         @rename="emit('startEdit')"
         @delete="emit('requestDelete')"
       />
+    </div>
+
+    <div class="flex items-center gap-3 mt-3 pt-3 border-t border-gray-200">
+      <span class="text-xs text-gray-500 flex items-center gap-1">
+        📋 {{ listCount }} list
+      </span>
+      <span class="text-xs text-gray-500 flex items-center gap-1">
+        🗂️ {{ cardCount }} card
+      </span>
     </div>
   </RouterLink>
 </template>
