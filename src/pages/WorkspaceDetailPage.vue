@@ -120,31 +120,33 @@ async function confirmDelete() {
         :board="board"
         :is-editing="editingId === board.id"
         :is-menu-open="openMenuId === board.id"
+        :list-count="boardStore.statsForBoard(board.id).list_count"
+        :card-count="boardStore.statsForBoard(board.id).card_count"
         @toggle-menu="toggleMenu(board.id)"
         @close-menu="closeMenu"
         @start-edit="startEdit(board.id, board.title)"
         @request-delete="requestDelete(board.id, board.title)"
       >
         <template #edit-form>
-          <div class="flex flex-col space-y-0.5">
+          <div class="flex flex-col gap-3">
             <input
               :ref="(el) => setEditInputRef(el, board.id)"
               v-model="editingTitle"
               type="text"
-              class="flex-1 border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none"
+              class="w-full border-b border-gray-300 focus:border-blue-500 outline-none pb-1.5 font-medium"
               @keyup.enter="saveEdit"
               @keyup.escape="editingId = null"
             />
-            <div class="flex items-center gap-0.5">
+            <div class="flex items-center gap-2">
               <button
-                class="text-sm text-blue-600 hover:bg-blue-100 px-2 py-1 rounded-md"
+                class="text-sm text-blue-600 hover:bg-blue-100 px-2 py-1.5 rounded-md"
                 @click="saveEdit"
                 :disabled="boardStore.updating"
               >
                 {{ boardStore.updating ? 'Menyimpan...' : 'Simpan' }}
               </button>
               <button
-                class="text-sm text-gray-500 hover:text-gray-600 hover:bg-gray-200 px-2 py-1 rounded-md"
+                class="text-sm text-gray-500 hover:text-gray-600 hover:bg-gray-200 px-2 py-1.5 rounded-md"
                 @click="editingId = null"
                 :disabled="boardStore.updating"
               >

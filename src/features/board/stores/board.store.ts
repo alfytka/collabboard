@@ -3,8 +3,16 @@ import type { Board } from '../types';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useAsyncState } from '@/shared/composables/useAsyncState';
+import { ref } from 'vue';
+
+interface BoardStats {
+  list_count: number;
+  card_count: number;
+}
 
 export const useBoardStore = defineStore('board', () => {
+  const boardStats = ref<Record<string, BoardStats>>({});
+
   const boards = useAsyncState(async (workspaceId: string) => {
     const { data, error } = await supabase
       .from('boards')
@@ -78,6 +86,27 @@ export const useBoardStore = defineStore('board', () => {
 
   async function fetchBoardsByWorkspace(workspaceId: string) {
     await boards.execute(workspaceId);
+
+    const boardIds = (boards.data.value ?? []).map((b) => b.id);
+    if (boardIds.length === 0) return;
+
+    const { data, error } = await supabase
+      .from('board_stats')
+      .select('*')
+      .in('board_id', boardIds);
+
+    if (!error && data) {
+      boardStats.value = Object.fromEntries(
+        data.map((s) => [s.board_id, {
+          list_count: s.list_count,
+          card_count: s.card_count,
+        }])
+      )
+    }
+  }
+
+  function statsForBoard(boardId: string): BoardStats {
+    return boardStats.value[boardId] ?? { list_count: 0, card_count: 0 };
   }
 
   async function fetchBoardById(boardId: string) {
@@ -112,6 +141,7 @@ export const useBoardStore = defineStore('board', () => {
     deleting: deleting.loading,
     deleteError: deleting.error,
     fetchBoardsByWorkspace,
+    statsForBoard,
     fetchBoardById,
     createBoard,
     updateBoard,
