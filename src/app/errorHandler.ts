@@ -3,7 +3,7 @@ import type { App } from 'vue';
 export function setupGlobalErrorHandling(app: App) {
   // Menangkap error dari lifecycle/render Vue yang TIDAK tertangkap ErrorBoundary manapun
   // (misal terjadi di komponen yang tidak dibungkus ErrorBoundary sama sekali)
-  app.config.errorHandler = (err, instance, info) => {
+  app.config.errorHandler = (err, _, info) => {
     console.error('[Global Error Hanlder]', err, info);
     // di sini bisa kirim ke error tracking service (Sentry, dll)
   };

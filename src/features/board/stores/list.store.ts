@@ -37,6 +37,24 @@ export const useListStore = defineStore('list', () => {
     return data as List;
   });
 
+  const updating = useAsyncState(async (listId: string, title: string) => {
+    const list = lists.data.value?.find((l) => l.id === listId);
+    if (!list) return;
+
+    const oldTitle = list.title;
+    list.title = title; // optimistic
+
+    const { error } = await supabase
+      .from('lists')
+      .update({ title })
+      .eq('id', listId);
+
+    if (error) {
+      list.title = oldTitle; // rollback
+      throw error;
+    }
+  })
+
   async function fetchListsByBoard(boardId: string) {
     await lists.execute(boardId);
   }
@@ -47,6 +65,10 @@ export const useListStore = defineStore('list', () => {
       lists.data.value.push(newList); // push di akhir, bukan unshift (listt baru muncul di kanan)
     }
     return newList;
+  }
+
+  async function updateList(listId: string, title: string) {
+    await updating.execute(listId, title);
   }
 
   async function moveList(listId: string, newPosition: number) {
@@ -117,8 +139,11 @@ export const useListStore = defineStore('list', () => {
     error: lists.error,
     creating: creating.loading,
     createError: creating.error,
+    updating: updating.loading,
+    updateError: updating.error,
     fetchListsByBoard,
     createList,
+    updateList,
     moveList,
     subscribeToBoard,
     unsubscribe,
