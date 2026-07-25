@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+import LogoutConfirmModal from './LogoutConfirmModal.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-async function handleLogout() {
+const showLogoutConfirm = ref(false);
+const isConfirming = ref(false);
+
+async function confirmLogout() {
+  isConfirming.value = true;
   await authStore.signOut();
+  isConfirming.value = false;
+  showLogoutConfirm.value = false;
   router.push({ name: 'login' });
 }
 </script>
@@ -24,12 +32,19 @@ async function handleLogout() {
         </span>
         <button
           type="button"
-          class="text-sm text-gray-600 hover:text-red-600 transition"
-          @click="handleLogout"
+          class="text-sm text-gray-600 hover:text-red-600 transition cursor-pointer"
+          @click="showLogoutConfirm = true"
         >
           Logout
         </button>
       </div>
     </div>
   </nav>
+
+  <LogoutConfirmModal
+    :open="showLogoutConfirm"
+    :loading="isConfirming"
+    @close="showLogoutConfirm = false"
+    @confirm="confirmLogout"
+  />
 </template>
