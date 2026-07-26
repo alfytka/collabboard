@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Card } from '../types';
+import { getAvatarColor } from '@/shared/utils/avatar';
 
 const props = defineProps<{ card: Card }>();
 const emit = defineEmits<{ click: [] }>();
 
-const accentColor = computed(() => {
-  const palette = ['bg-blue-400', 'bg-emerald-400', 'bg-amber-400', 'bg-rose-400', 'bg-violet-400', 'bg-cyan-400'];
-  const hash = props.card.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return palette[hash % palette.length];
-});
+const accentColor = computed(() => getAvatarColor(props.card.id));
 
 const dueDateInfo = computed(() => {
   if (!props.card.due_date) return null;

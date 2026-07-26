@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getAvatarColor, getInitials } from '@/shared/utils/avatar';
+
 defineProps<{
   users: Array<{
     user_id: string;
@@ -6,17 +8,6 @@ defineProps<{
     online_at: string;
   }>
 }>();
-
-function getInitials(email: string): string {
-  return email.slice(0, 2).toUpperCase();
-}
-
-// Warna avatar konsisten per user, dihasilkan dari user_id
-function getColor(userId: string): string {
-  const colors = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-yellow-400', 'bg-purple-400', 'bg-pink-400'];
-  const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return colors[hash % colors.length];
-}
 </script>
 
 <template>
@@ -25,7 +16,7 @@ function getColor(userId: string): string {
       <div
         v-for="user in users"
         :key="user.user_id"
-        :class="getColor(user.user_id)"
+        :class="getAvatarColor(user.user_id)"
         class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium text-white"
         :title="user.email"
       >
