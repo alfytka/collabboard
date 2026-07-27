@@ -7,6 +7,7 @@ import CreateCardForm from './CreateCardForm.vue';
 import draggable from 'vuedraggable';
 import { useListStore } from '../stores/list.store.ts';
 import { ref } from 'vue';
+import DeleteListModal from './DeleteListModal.vue';
 
 const props = defineProps<{
   list: List;
@@ -18,6 +19,7 @@ const emit = defineEmits<{ cardClick: [card: Card] }>();
 const cardStore = useCardStore();
 const listStore = useListStore();
 
+const showDeleteConfirm = ref(false);
 const titleDraft = ref(props.list.title);
 
 function handleTitleBlur() {
@@ -29,6 +31,11 @@ function handleTitleBlur() {
   if (trimmed !== props.list.title) {
     listStore.updateList(props.list.id, trimmed);
   }
+}
+
+async function confirmDeleteList() {
+  await listStore.deleteList(props.list.id);
+  showDeleteConfirm.value = false;
 }
 
 // vuedraggable butuh v-model, tapi kita tidak mau langsung mutate props.
@@ -64,16 +71,31 @@ function handleCardMove(event: any) {
 <template>
   <div class="shrink-0 w-72 bg-gray-50/80 rounded-xl border border-gray-200/80 shadow-sm flex flex-col max-h-[calc(100vh-220px)]">
     <!-- Header -->
-    <div class="list-drag-handle flex items-center justify-between gap-2 px-3 pt-3 pb-2 cursor-grab active:cursor-grabbing">
+    <div class="flex items-center gap-1.5 px-3 pt-3 pb-2">
+      <span class="list-drag-handle text-gray-300 hover:text-gray-400 cursor-grab active:cursor-grabbing text-sm px-0.5">
+        ⠿
+      </span>
+
       <input
         v-model="titleDraft"
+        name="listTitle"
         class="min-w-0 flex-1 bg-transparent font-semibold text-gray-700 text-sm rounded px-1.5 py-1 -mx-1.5 border border-transparent hover:border-gray-300 focus:border-blue-400 focus:bg-white outline-none transition"
         @blur="handleTitleBlur"
         @keyup.enter="($event.target as HTMLInputElement).blur()"
       />
+
       <span class="shrink-0 text-xs font-medium text-gray-400 bg-gray-200/70 rounded-full px-2 py-0.5">
         {{ cards.length }}
       </span>
+
+      <button
+        type="button"
+        class="shrink-0 text-gray-300 hover:text-red-500 transition cursor-pointer"
+        title="Hapus list"
+        @click="showDeleteConfirm = true"
+      >
+        🗑
+      </button>
     </div>
 
     <!-- Cards -->
@@ -94,5 +116,13 @@ function handleCardMove(event: any) {
     <div class="px-3 pb-3 pt-1">
       <CreateCardForm :list-id="list.id" />
     </div>
+
+    <DeleteListModal
+      :open="showDeleteConfirm"
+      :list-title="list.title"
+      :loading="listStore.deleting"
+      @close="showDeleteConfirm = false"
+      @confirm="confirmDeleteList"
+    />
   </div>
 </template>
