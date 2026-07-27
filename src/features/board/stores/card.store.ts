@@ -156,9 +156,13 @@ export const useCardStore = defineStore('card', () => {
     }
 
     if (payload.eventType === 'UPDATE') {
-      const index = cards.data.value.findIndex((c) => c.id === payload.new.id);
-      if (index !== -1) {
-        cards.data.value[index] = payload.new;
+      // const index = cards.data.value.findIndex((c) => c.id === payload.new.id);
+      // if (index !== -1) {
+      //   cards.data.value[index] = payload.new;
+      // }
+      const target = cards.data.value.find((c) => c.id === payload.new.id);
+      if (target) {
+        Object.assign(target, payload.new); // mutate object yang sama, bukan ganti reference
       }
     }
 

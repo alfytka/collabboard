@@ -124,8 +124,10 @@ export const useListStore = defineStore('list', () => {
     }
 
     if (payload.eventType === 'UPDATE') {
-      const index = lists.data.value.findIndex((l) => l.id === payload.new.id);
-      if (index !== -1) lists.data.value[index] = payload.new;
+      // const index = lists.data.value.findIndex((l) => l.id === payload.new.id);
+      // if (index !== -1) lists.data.value[index] = payload.new;
+      const target = lists.data.value.find((l) => l.id === payload.new.id);
+      if (target) Object.assign(target, payload.new);
     }
 
     if (payload.eventType === 'DELETE') {

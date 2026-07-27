@@ -21,7 +21,7 @@ const listStore = useListStore();
 const cardStore = useCardStore();
 const presenceStore = usePresenceStore();
 
-const selectedCard = ref<Card | null>(null);
+const selectedCardId = ref<string | null>(null);
 const searchBarRef = ref<InstanceType<typeof SearchBar> | null>(null);
 
 const boardId = computed(() => {
@@ -74,12 +74,18 @@ function handleListMove(event: any) {
   listStore.moveList(element.id, newPosition);
 }
 
+const selectedCard = computed(() =>
+  selectedCardId.value
+    ? cardStore.cards?.find((c) => c.id === selectedCardId.value) ?? null
+    : null
+);
+
 function openCard(card: Card) {
-  selectedCard.value = card;
+  selectedCardId.value = card.id;
 }
 
 function closeCard() {
-  selectedCard.value = null;
+  selectedCardId.value = null;
 }
 
 function focusSearch() {
@@ -87,7 +93,7 @@ function focusSearch() {
 }
 
 function closeModalOrClearSearch() {
-  if (selectedCard.value) {
+  if (selectedCardId.value) {
     closeCard();
   } else if (cardStore.searchQuery) {
     cardStore.searchQuery = '';

@@ -6,6 +6,7 @@ import { ref, watch } from 'vue';
 import Modal from './Modal.vue';
 import { formatRelativeTime, getAvatarColor, getInitials } from '../utils/avatar.ts';
 import { useAuthStore } from '@/features/auth/stores/auth.store.ts';
+import DeleteCommentModal from './DeleteCommentModal.vue';
 
 const props = defineProps<{
   card: Card | null;
@@ -22,10 +23,12 @@ const description = ref('');
 const dueDate = ref('');
 const newComment = ref('');
 
+const newCommentRef = ref<HTMLInputElement | null>(null);
+
 const editingCommentId = ref<string | null>(null);
 const editingCommentContent = ref('');
 
-const newCommentRef = ref<HTMLInputElement | null>(null);
+const deletingComment = ref<{ id: string; preview: string } | null>(null);
 
 // Sync form state setiap kali card yang dibuka berganti
 watch(
@@ -47,7 +50,7 @@ async function handleSaveTitle() {
 }
 
 async function handleSaveDescription() {
-  if (!props.card) return;
+  if (!props.card || description.value === props.card.description) return;
   await cardStore.updateCard(props.card.id, { description: description.value });
 }
 
@@ -77,6 +80,24 @@ async function saveEditComment() {
   if (!editingCommentId.value || !editingCommentContent.value.trim()) return;
   await commentStore.updateComment(editingCommentId.value, editingCommentContent.value);
   editingCommentId.value = null;
+}
+
+function requestDeleteComment(comment: CommentWithAuthor) {
+  const preview = comment.content.length > 40
+    ? comment.content.slice(0, 40) + '...'
+    : comment.content;
+  deletingComment.value = { id: comment.id, preview };
+}
+
+function closeDeleteCommentModal() {
+  if (commentStore.deleting) return;
+  deletingComment.value = null;
+}
+
+async function confirmDeleteComment() {
+  if (!deletingComment.value) return;
+  await commentStore.deleteComment(deletingComment.value.id);
+  deletingComment.value = null;
 }
 </script>
 
@@ -135,32 +156,32 @@ async function saveEditComment() {
               {{ getInitials(comment.authorEmail) }}
             </div>
 
-            <div class="flex-1 min-w-0 bg-gray-50 rounded-lg px-3 py-2">
+            <div class="flex-1 min-w-0 bg-gray-100 rounded-lg px-3 py-2">
               <div class="flex items-baseline justify-between gap-2">
                 <span class="text-sm font-medium text-gray-800">
                   {{ comment.user_id === authStore.user?.id ? 'Kamu' : comment.authorEmail }}
                 </span>
-                <span class="text-xs text-gray-400 shrink-0">
+                <span class="text-xs text-gray-500 shrink-0">
                   {{ formatRelativeTime(comment.created_at) }}
                   <span v-if="comment.is_edited">(diedit)</span>
                 </span>
               </div>
 
               <!-- Mode edit -->
-              <div v-if="editingCommentId === comment.id" class="mt-1 flex flex-col gap-1">
+              <div v-if="editingCommentId === comment.id" class="flex flex-col gap-1">
                 <input
                   v-model="editingCommentContent"
                   type="text"
-                  class="text-sm border-b border-blue-400 outline-none bg-white px-1 py-0.5"
+                  class="text-sm border-b border-blue-500 outline-none py-0.5"
                   @keyup.enter="saveEditComment"
                   @keyup.escape="editingCommentId = null"
                   autofocus
                 />
-                <div class="flex gap-2 text-xs">
-                  <button type="button" class="text-blue-600" @click="saveEditComment">
+                <div class="flex gap-2 my-0.5 text-xs">
+                  <button type="button" class="text-blue-600 cursor-pointer" @click="saveEditComment">
                     Simpan
                   </button>
-                  <button type="button" class="text-gray-500" @click="editingCommentId = null">
+                  <button type="button" class="text-gray-500 cursor-pointer" @click="editingCommentId = null">
                     Batal
                   </button>
                 </div>
@@ -187,7 +208,7 @@ async function saveEditComment() {
               <button
                 type="button"
                 class="text-gray-400 hover:text-red-500 cursor-pointer"
-                @click="commentStore.deleteComment(comment.id)"
+                @click="requestDeleteComment(comment)"
               >
                 Hapus
               </button>
@@ -219,4 +240,12 @@ async function saveEditComment() {
       </div>
     </div>
   </Modal>
+
+  <DeleteCommentModal
+    :open="!!deletingComment"
+    :comment-preview="deletingComment?.preview ?? ''"
+    :loading="commentStore.deleting"
+    @close="closeDeleteCommentModal"
+    @confirm="confirmDeleteComment"
+  />
 </template>
