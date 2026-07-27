@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { Card } from '../types';
 import { getAvatarColor } from '@/shared/utils/avatar';
+import { useCardStore } from '../stores/card.store';
+import DeleteCardModal from './DeleteCardModal.vue';
 
 const props = defineProps<{ card: Card }>();
 const emit = defineEmits<{ click: [] }>();
+
+const cardStore = useCardStore();
+const showDeleteConfirm = ref(false);
 
 const accentColor = computed(() => getAvatarColor(props.card.id));
 
@@ -21,6 +26,11 @@ const dueDateInfo = computed(() => {
     isOverdue,
   }
 });
+
+async function confirmDeleteCard() {
+  await cardStore.deleteCard(props.card.id);
+  showDeleteConfirm.value = false;
+}
 </script>
 
 <template>
@@ -31,7 +41,17 @@ const dueDateInfo = computed(() => {
     <div class="h-1" :class="accentColor" />
 
     <div class="p-3">
-      <p class="text-sm text-gray-800 leading-snug">{{ card.title }}</p>
+      <div class="flex items-start justify-between gap-2">
+        <p class="text-sm text-gray-800 leading-snug">{{ card.title }}</p>
+        <button
+          type="button"
+          class="shrink-0 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition cursor-pointer"
+          title="Hapus card"
+          @click.stop="showDeleteConfirm = true"
+        >
+          🗑
+        </button>
+      </div>
 
       <div v-if="dueDateInfo || card.description" class="flex items-center gap-2 mt-2.5">
         <span
@@ -49,5 +69,13 @@ const dueDateInfo = computed(() => {
         </span>
       </div>
     </div>
+
+    <DeleteCardModal
+      :open="showDeleteConfirm"
+      :card-title="card.title"
+      :loading="cardStore.deleting"
+      @close="showDeleteConfirm = false"
+      @confirm="confirmDeleteCard"
+    />
   </div>
 </template>

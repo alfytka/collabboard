@@ -47,6 +47,23 @@ export const useCardStore = defineStore('card', () => {
     return data as Card;
   });
 
+  const deleting = useAsyncState(async (cardId: string) => {
+    if (!cards.data.value) return;
+
+    const backup = [...cards.data.value];
+    cards.data.value = cards.data.value.filter((c) => c.id !== cardId); // optimistic
+
+    const { error } = await supabase
+      .from('cards')
+      .delete()
+      .eq('id', cardId);
+
+    if (error) {
+      cards.data.value = backup; // rollback
+      throw error;
+    }
+  });
+
   async function fetchCardsByBoard(boardId: string) {
     await cards.execute(boardId);
   }
@@ -101,6 +118,10 @@ export const useCardStore = defineStore('card', () => {
       Object.assign(card, oldValues); // rollback
       throw error;
     }
+  }
+
+  async function deleteCard(cardId: string) {
+    await deleting.execute(cardId);
   }
 
   const searchQuery = ref('');
@@ -177,11 +198,14 @@ export const useCardStore = defineStore('card', () => {
     error: cards.error,
     creating: creating.loading,
     createError: creating.error,
+    deleting: deleting.loading,
+    deleteError: deleting.error,
     searchQuery,
     fetchCardsByBoard,
     createCard,
     moveCard,
     updateCard,
+    deleteCard,
     cardsForList,
     subscribeToBoard,
     unsubscribe,
