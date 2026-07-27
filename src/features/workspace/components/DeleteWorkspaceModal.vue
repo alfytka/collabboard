@@ -27,9 +27,9 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
         </button>
         <button
           type="button"
+          :disabled="loading"
           class="px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md"
           @click="emit('confirm')"
-          :disabled="loading"
         >
           {{ loading ? 'Menghapus...' : 'Ya, Hapus' }}
         </button>

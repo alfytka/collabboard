@@ -82,7 +82,7 @@ export const useCommentStore = defineStore('comment', () => {
   const deleting = useAsyncState(async (commentId: string) => {
     if (!comments.data.value) return;
     const backup = [...comments.data.value];
-    comments.data.value = comments.data.value.filter((c) => c.id !== commentId);
+    comments.data.value = comments.data.value.filter((c) => c.id !== commentId); // optimistic
 
     const { error } = await supabase
       .from('comments')
@@ -129,6 +129,8 @@ export const useCommentStore = defineStore('comment', () => {
     createError: creating.error,
     updating: updating.loading,
     updateError: updating.error,
+    deleting: deleting.loading,
+    deleteError: deleting.error,
     fetchComments,
     addComment,
     updateComment,
