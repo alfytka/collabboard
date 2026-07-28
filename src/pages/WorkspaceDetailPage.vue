@@ -133,6 +133,7 @@ async function confirmDelete() {
               :ref="(el) => setEditInputRef(el, board.id)"
               v-model="editingTitle"
               type="text"
+              name="boardName"
               class="w-full border-b border-gray-300 focus:border-blue-500 outline-none pb-1.5 font-medium"
               @keyup.enter="saveEdit"
               @keyup.escape="editingId = null"

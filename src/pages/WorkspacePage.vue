@@ -105,6 +105,7 @@ async function confirmDelete() {
         ref="newWorkspaceNameRef"
         v-model="newWorkspaceName"
         type="text"
+        name="newWorkspaceName"
         placeholder="Nama workspace baru..."
         class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm placeholder:text-gray-400"
       />
@@ -135,6 +136,7 @@ async function confirmDelete() {
             :ref="(el) => setEditInputRef(el, workspace.id)"
             v-model="editingName"
             type="text"
+            name="workspaceName"
             class="flex-1 border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none py-1.5"
             @keyup.enter="saveEdit"
             @keyup.escape="editingId = null"

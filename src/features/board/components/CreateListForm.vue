@@ -21,6 +21,7 @@ async function handleSubmit() {
       <input
         v-model="title"
         type="text"
+        name="newListName"
         placeholder="Nama list..."
         class="border border-gray-300 rounded-md px-3 py-2 text-sm"
         autofocus

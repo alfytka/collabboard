@@ -26,6 +26,7 @@ async function handleSubmit() {
       ref="titleRef"
       v-model="title"
       type="text"
+      name="newBoardName"
       placeholder="Nama board baru..."
       class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm placeholder:text-gray-400"
     />
