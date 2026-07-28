@@ -72,7 +72,7 @@ function handleCardMove(event: any) {
   <div class="shrink-0 w-72 bg-gray-50/80 rounded-xl border border-gray-200/80 shadow-sm flex flex-col max-h-[calc(100vh-220px)]">
     <!-- Header -->
     <div class="flex items-center gap-1.5 px-3 pt-3 pb-2">
-      <span class="list-drag-handle text-gray-300 hover:text-gray-400 cursor-grab active:cursor-grabbing text-sm px-0.5">
+      <span class="list-drag-handle text-gray-400 hover:text-gray-500 cursor-grab active:cursor-grabbing text-sm px-0.5">
         ⠿
       </span>
 
@@ -84,7 +84,7 @@ function handleCardMove(event: any) {
         @keyup.enter="($event.target as HTMLInputElement).blur()"
       />
 
-      <span class="shrink-0 text-xs font-medium text-gray-400 bg-gray-200/70 rounded-full px-2 py-0.5">
+      <span class="shrink-0 text-xs font-medium text-gray-500 bg-gray-200/70 rounded-full px-2 py-0.5">
         {{ cards.length }}
       </span>
 

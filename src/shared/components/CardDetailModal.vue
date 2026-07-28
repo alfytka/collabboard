@@ -106,8 +106,8 @@ async function confirmDeleteComment() {
     <div v-if="card" class="p-6 flex flex-col gap-4">
       <input
         v-model="title"
-        id="title"
         type="text"
+        name="title"
         class="text-lg font-semibold border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none pb-1"
         @blur="handleSaveTitle"
       />
@@ -132,9 +132,9 @@ async function confirmDeleteComment() {
         </label>
         <input
           v-model="dueDate"
-          id="date"
           type="date"
-          class="block mt-1 border border-gray-200 rounded-md p-2 text-sm"
+          id="date"
+          class="block w-full mt-1 border border-gray-200 rounded-md p-2 text-sm"
           @change="handleSaveDueDate"
         />
       </div>
