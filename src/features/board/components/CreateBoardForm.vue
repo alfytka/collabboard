@@ -28,11 +28,12 @@ async function handleSubmit() {
       type="text"
       name="newBoardName"
       placeholder="Nama board baru..."
+      :disabled="boardStore.loading"
       class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm placeholder:text-gray-400"
     />
     <button
       type="submit"
-      :disabled="boardStore.creating"
+      :disabled="boardStore.creating || boardStore.loading"
       class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
     >
       {{ boardStore.creating ? 'Memuat...' : 'Buat Board' }}

@@ -103,7 +103,30 @@ async function confirmDeleteComment() {
 
 <template>
   <Modal :open="!!card" @close="emit('close')">
-    <div v-if="card" class="p-6 flex flex-col gap-4">
+    <div v-if="cardStore.loading || commentStore.loading" class="p-6 flex flex-col gap-4">
+      <div class="h-8 bg-gray-200 rounded-md w-2/3 animate-pulse" />
+      <div class="flex flex-col space-y-1">
+        <div class="h-5 bg-gray-200 rounded-md w-1/3 animate-pulse" />
+        <div class="h-18 bg-gray-200 rounded-md w-full animate-pulse" />
+      </div>
+      <div class="flex flex-col space-y-1">
+        <div class="h-5 bg-gray-200 rounded-md w-1/3 animate-pulse" />
+        <div class="h-8 bg-gray-200 rounded-md w-full animate-pulse" />
+      </div>
+      <div class="flex flex-col space-y-2">
+        <div class="h-5 bg-gray-200 rounded-md w-1/3 animate-pulse" />
+        <div class="flex gap-2">
+          <div class="shrink-0 w-7 h-7 bg-gray-200 rounded-full" />
+          <div class="flex-1 h-18 bg-gray-200 rounded-md animate-pulse" />
+        </div>
+        <div class="flex gap-2">
+          <div class="h-8 bg-gray-200 rounded-md w-10/12 animate-pulse" />
+          <div class="h-8 bg-gray-200 rounded-md w-2/12 animate-pulse" />
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="card" class="p-6 flex flex-col gap-4">
       <input
         v-model="title"
         type="text"

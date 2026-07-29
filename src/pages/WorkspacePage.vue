@@ -107,11 +107,12 @@ async function confirmDelete() {
         type="text"
         name="newWorkspaceName"
         placeholder="Nama workspace baru..."
+        :disabled="workspaceStore.loading"
         class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm placeholder:text-gray-400"
       />
       <button
         type="submit"
-        :disabled="workspaceStore.creating"
+        :disabled="workspaceStore.creating || workspaceStore.loading"
         class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
       >
         {{ workspaceStore.creating ? 'Membuat...' : 'Buat' }}
@@ -122,7 +123,13 @@ async function confirmDelete() {
       {{ workspaceStore.createError }}
     </p>
 
-    <p v-if="workspaceStore.loading">Memuat...</p>
+    <div v-if="workspaceStore.loading" class="flex flex-col space-y-2">
+      <div v-for="i in 5" :key="i" class="flex items-center justify-between h-18 bg-gray-100 rounded-lg p-4">
+        <div class="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+        <div class="h-4 bg-gray-200 rounded w-1/12 animate-pulse" />
+      </div>
+    </div>
+
     <p v-else-if="workspaceStore.error" class="text-red-500">{{ workspaceStore.error }}</p>
 
     <ul v-else class="flex flex-col gap-2">

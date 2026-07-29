@@ -110,7 +110,16 @@ async function confirmDelete() {
 
     <CreateBoardForm :workspace-id="workspaceId" />
 
-    <p v-if="boardStore.loading" class="mt-6">Memuat board...</p>
+    <div v-if="boardStore.loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+      <div v-for="i in 6" :key="i" class="flex items-center justify-between h-28 bg-gray-100 rounded-lg p-4">
+        <div class="flex flex-1 flex-col space-y-2">
+          <div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse" />
+          <div class="h-4 bg-gray-200 rounded w-1/3 animate-pulse" />
+        </div>
+        <div class="h-4 bg-gray-200 rounded w-1/12 animate-pulse" />
+      </div>
+    </div>
+
     <p v-else-if="boardStore.error" class="text-red-500 mt-6">{{ boardStore.error }}</p>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
