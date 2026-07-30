@@ -2,6 +2,7 @@
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import AppNav from '@/shared/components/AppNav.vue';
 import ErrorBoundary from '@/shared/components/ErrorBoundary.vue';
+import PendingInvitationsBanner from '@/shared/components/PendingInvitationsBanner.vue';
 
 const authStore = useAuthStore();
 </script>
@@ -9,6 +10,7 @@ const authStore = useAuthStore();
 <template>
   <main class="min-h-dvh bg-gray-50 transition-colors">
     <AppNav v-if="authStore.isAuthenticated" />
+    <PendingInvitationsBanner v-if="authStore.isAuthenticated" />
 
     <ErrorBoundary>
       <RouterView v-slot="{ Component }">
