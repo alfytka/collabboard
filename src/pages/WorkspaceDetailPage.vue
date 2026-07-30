@@ -3,6 +3,7 @@ import BoardCard from '@/features/board/components/BoardCard.vue';
 import CreateBoardForm from '@/features/board/components/CreateBoardForm.vue';
 import DeleteBoardModal from '@/features/board/components/DeleteBoardModal.vue';
 import { useBoardStore } from '@/features/board/stores/board.store';
+import InviteMembersModal from '@/features/workspace/components/InviteMembersModal.vue';
 import { useWorkspaceStore } from '@/features/workspace/stores/workspace.store';
 import {
   computed,
@@ -24,6 +25,8 @@ const editInputRefs = new Map<string, HTMLInputElement>();
 
 const deletingBoard = ref<{ id: string; title: string } | null>(null);
 const openMenuId = ref<string | null>(null);
+
+const showInviteModal = ref(false);
 
 // route.params.workspaceId bisa string | string[], pastikan selalu string
 const workspaceId = computed(() => {
@@ -103,9 +106,19 @@ async function confirmDelete() {
       <RouterLink to="/" class="text-sm text-blue-500 hover:underline inline-block">
         Semua Workspace
       </RouterLink>
-      <h1 class="text-2xl font-bold mt-2">
-        {{ currentWorkspace?.name ?? 'Workspace' }}
-      </h1>
+
+      <div class="flex items-center justify-between mt-2">
+        <h1 class="text-2xl font-bold">
+          {{ currentWorkspace?.name ?? 'Workspace' }}
+        </h1>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 text-sm text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-md px-3 py-1.5 transition"
+          @click="showInviteModal = true"
+        >
+          <span class="text-base leading-none">+</span> Undang Anggota
+        </button>
+      </div>
     </div>
 
     <CreateBoardForm :workspace-id="workspaceId" />
@@ -171,6 +184,13 @@ async function confirmDelete() {
     <p v-if="!boardStore.loading && boardStore.boards?.length === 0" class="text-gray-500 mt-6">
       Belum ada board. Buat board pertama kamu!
     </p>
+
+    <InviteMembersModal
+      :open="showInviteModal"
+      :workspace-id="workspaceId"
+      :workspace-name="currentWorkspace?.name ?? ''"
+      @close="showInviteModal = false"
+    />
 
     <DeleteBoardModal
       :open="!!deletingBoard"
