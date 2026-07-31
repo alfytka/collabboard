@@ -52,6 +52,10 @@ export const useInvitationStore = defineStore('invitation', () => {
     const authStore = useAuthStore();
     if (!authStore.user) throw new Error('User tidak ditemukan');
 
+    if (email.toLowerCase().trim() === authStore.user.email?.toLowerCase()) {
+      throw new Error('Anda tidak bisa mengundang diri Anda sendiri.');
+    }
+
     const { data, error } = await supabase
       .from('invitations')
       .insert({
@@ -66,6 +70,9 @@ export const useInvitationStore = defineStore('invitation', () => {
     if (error) {
       if (error.code === '23505') {
         throw new Error('Email ini sudah diundang dan masih menunggu konfirmasi.');
+      }
+      if (error.code === '42501') {
+        throw new Error('Undangan tidak valid.'); // fallback jika RLS with check gagal
       }
       throw error;
     }
