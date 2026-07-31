@@ -188,7 +188,7 @@ async function confirmDelete() {
     <InviteMembersModal
       :open="showInviteModal"
       :workspace-id="workspaceId"
-      :workspace-name="currentWorkspace?.name ?? ''"
+      :workspace-name="currentWorkspace?.name ?? 'Workspace'"
       @close="showInviteModal = false"
     />
 

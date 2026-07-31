@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useInvitationStore } from '../stores/invitation.store';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import Modal from '@/shared/components/Modal.vue';
 
 const props = defineProps<{
@@ -17,6 +17,19 @@ const invitationStore = useInvitationStore();
 onMounted(() => {
   invitationStore.fetchWorkspaceInvitations(props.workspaceId);
 });
+
+const isSelfInvite = computed(() =>
+  invitationStore.emailDraft.trim().toLowerCase() === authStore.user?.email?.toLowerCase()
+);
+
+function handleSubmit() {
+  if (isSelfInvite.value) return;
+  invitationStore.inviteMember(
+    props.workspaceId,
+    props.workspaceName,
+    invitationStore.emailDraft,
+  );
+}
 </script>
 
 <template>
@@ -29,7 +42,7 @@ onMounted(() => {
 
       <form
         class="flex gap-2"
-        @submit.prevent="invitationStore.inviteMember(workspaceId, workspaceName, invitationStore.emailDraft)"
+        @submit.prevent="handleSubmit"
       >
         <input
           v-model="invitationStore.emailDraft"
@@ -38,15 +51,20 @@ onMounted(() => {
           placeholder="Email teman..."
           autocomplete="off"
           class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+          :class="{ 'border-red-300': isSelfInvite }"
         />
         <button
           type="submit"
-          :disabled="invitationStore.inviting"
+          :disabled="invitationStore.inviting || isSelfInvite"
           class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
         >
           {{ invitationStore.inviting ? 'Mengundang...' : 'Undang' }}
         </button>
       </form>
+
+      <p v-if="isSelfInvite" class="text-sm text-amber-600 mt-2">
+        Anda tidak bisa mengundang diri Anda sendiri.
+      </p>
 
       <p v-if="invitationStore.inviteError" class="text-sm text-red-500 mt-2">
         {{ invitationStore.inviteError }}
