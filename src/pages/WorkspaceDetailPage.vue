@@ -40,9 +40,15 @@ const currentWorkspace = computed(() =>
   workspaceStore.workspaces?.find((w) => w.id === workspaceId.value)
 );
 
-onMounted(() => {
-  boardStore.fetchBoardsByWorkspace(workspaceId.value);
-  document.addEventListener('click', closeMenu)
+onMounted(async () => {
+  document.addEventListener('click', closeMenu);
+  const promiseFn = [
+    boardStore.fetchBoardsByWorkspace(workspaceId.value),
+  ];
+  if (!workspaceStore.workspaces?.length) {
+    promiseFn.push(workspaceStore.fetchWorkspaces());
+  }
+  await Promise.all(promiseFn);
 });
 
 onUnmounted(() => {
