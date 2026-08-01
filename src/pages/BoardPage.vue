@@ -142,7 +142,7 @@ function closeModalOrClearSearch() {
         :model-value="listStore.lists"
         item-key="id"
         :disabled="!!cardStore.searchQuery"
-        class="flex gap-4 overflow-x-auto pb-4"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-4"
         ghost-class="opacity-40"
         handle=".list-drag-handle"
         @change="handleListMove"

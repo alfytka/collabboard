@@ -69,7 +69,7 @@ function handleCardMove(event: any) {
 </script>
 
 <template>
-  <div class="shrink-0 w-72 bg-gray-50/80 rounded-xl border border-gray-200/80 shadow-sm flex flex-col max-h-[calc(100vh-220px)]">
+  <div class="bg-gray-50/80 rounded-xl border border-gray-200/80 shadow-sm flex flex-col">
     <!-- Header -->
     <div class="flex items-center gap-1.5 px-3 pt-3 pb-2">
       <span class="list-drag-handle text-gray-400 hover:text-gray-500 cursor-grab active:cursor-grabbing text-sm px-0.5">
