@@ -16,7 +16,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="shrink-0 w-72">
+  <div class="shrink-0">
     <form v-if="isOpen" class="bg-gray-100 rounded-lg p-3 flex flex-col gap-2" @submit.prevent="handleSubmit">
       <input
         v-model="title"
