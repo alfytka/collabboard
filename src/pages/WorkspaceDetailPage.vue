@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/features/auth/stores/auth.store';
 import BoardCard from '@/features/board/components/BoardCard.vue';
 import CreateBoardForm from '@/features/board/components/CreateBoardForm.vue';
 import DeleteBoardModal from '@/features/board/components/DeleteBoardModal.vue';
 import { useBoardStore } from '@/features/board/stores/board.store';
 import InviteMembersModal from '@/features/workspace/components/InviteMembersModal.vue';
+import ManageMembersModal from '@/features/workspace/components/ManageMembersModal.vue';
 import { useWorkspaceStore } from '@/features/workspace/stores/workspace.store';
 import {
   computed,
@@ -18,6 +20,7 @@ import { RouterLink, useRoute } from 'vue-router';
 const route = useRoute();
 const boardStore = useBoardStore();
 const workspaceStore = useWorkspaceStore();
+const authStore = useAuthStore();
 
 const editingId = ref<string | null>(null);
 const editingTitle = ref('');
@@ -27,6 +30,7 @@ const deletingBoard = ref<{ id: string; title: string } | null>(null);
 const openMenuId = ref<string | null>(null);
 
 const showInviteModal = ref(false);
+const showMembersModal = ref(false);
 
 // route.params.workspaceId bisa string | string[], pastikan selalu string
 const workspaceId = computed(() => {
@@ -38,6 +42,10 @@ const workspaceId = computed(() => {
 // (menghindari fetch ulang kalau user datang dari WorkspacePage)
 const currentWorkspace = computed(() =>
   workspaceStore.workspaces?.find((w) => w.id === workspaceId.value)
+);
+
+const isOwner = computed(() =>
+  currentWorkspace.value?.owner_id === authStore.user?.id
 );
 
 onMounted(async () => {
@@ -117,14 +125,23 @@ async function confirmDelete() {
         <h1 class="text-2xl font-bold">
           {{ currentWorkspace?.name ?? 'Workspace' }}
         </h1>
-        <button
-          type="button"
-          class="flex items-center gap-1.5 text-sm text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-md px-3 py-1.5 transition"
-          @click="showInviteModal = true"
-        >
-          <span class="text-base leading-none">+</span> Undang Anggota
-        </button>
-      </div>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 rounded-md px-3 py-1.5 transition"
+            @click="showMembersModal = true"
+          >
+            Anggota
+          </button>
+          <button
+            type="button"
+            class="flex items-center gap-1.5 text-sm text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-md px-3 py-1.5 transition"
+            @click="showInviteModal = true"
+          >
+            <span class="text-base leading-none">+</span> Undang Anggota
+          </button>
+        </div>
+        </div>
     </div>
 
     <CreateBoardForm :workspace-id="workspaceId" />
@@ -204,6 +221,13 @@ async function confirmDelete() {
       :loading="boardStore.deleting"
       @close="closeDeleteModal"
       @confirm="confirmDelete"
+    />
+
+    <ManageMembersModal
+      :open="showMembersModal"
+      :workspace-id="workspaceId"
+      :is-owner="isOwner"
+      @close="showMembersModal = false"
     />
   </div>
 </template>
