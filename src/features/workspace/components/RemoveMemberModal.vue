@@ -3,6 +3,7 @@ import Modal from '@/shared/components/Modal.vue';
 
 defineProps<{
   open: boolean;
+  memberEmail: string;
   loading: boolean;
 }>();
 const emit = defineEmits<{ close: []; confirm: [] }>();
@@ -11,9 +12,9 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
 <template>
   <Modal :open="open" @close="emit('close')">
     <div class="p-6">
-      <h3 class="font-semibold text-gray-800 mb-2">Keluar dari akun?</h3>
+      <h3 class="font-semibold text-gray-800 mb-2">Keluarkan Anggota?</h3>
       <p class="text-sm text-gray-600 mb-4">
-        Kamu perlu login kembali untuk mengakses workspace dan board kamu.
+        <strong>{{ memberEmail }}</strong> tidak akan bisa lagi mengakses workspace ini.
       </p>
       <div class="flex gap-2 justify-end">
         <button
@@ -30,7 +31,7 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
           class="px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="emit('confirm')"
         >
-          {{ loading ? 'Memproses...' : 'Ya, Logout' }}
+          {{ loading ? 'Memproses...' : 'Ya, Keluarkan' }}
         </button>
       </div>
     </div>

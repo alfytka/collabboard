@@ -20,7 +20,7 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
         <button
           type="button"
           :disabled="loading"
-          class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
+          class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="emit('close')"
         >
           Batal
@@ -28,7 +28,7 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
         <button
           type="button"
           :disabled="loading"
-          class="px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md"
+          class="px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="emit('confirm')"
         >
           {{ loading ? 'Menghapus...' : 'Ya, Hapus' }}
